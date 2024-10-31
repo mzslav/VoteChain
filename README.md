@@ -6,7 +6,7 @@
 Скопіюйте репозиторій на ваш комп'ютер. Використовуйте команду:
 
 ```bash
-git clone https://github.com/username/VoteChain.git
+git clone https://github.com/username/VoteChain-Backend.git
 ```
 
 Замініть `username` на ваше ім'я користувача на GitHub.
