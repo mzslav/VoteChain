@@ -74,3 +74,11 @@ git commit -m "Опис змін"
 ```bash
 git push origin feature/your-feature-name
 ```
+### Запуск сервера з автооновленням
+```bash
+npm run serve
+```
+### Запуск сервера без автооновлення 
+```bash
+node app
+```
