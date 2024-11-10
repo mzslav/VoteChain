@@ -7,15 +7,17 @@ import connectDB from './db.js';
 connectDB();
 
 const __dirname = path.resolve();
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3500;
 
+app.use(cors());
 
 
 
-app.use(express.json());
-app.use(express.json());  
-app.use(express.static(path.resolve(__dirname, 'static')));  
+
+
+
 
 
 app.listen(PORT, () => {
