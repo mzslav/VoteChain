@@ -2,21 +2,23 @@ import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 import Poll from './models/Poll.js';  
+import connectDB from './db.js'; 
+
+connectDB();
 
 const __dirname = path.resolve();
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3500;
 
+
+
+
+app.use(express.json());
 app.use(express.json());  
 app.use(express.static(path.resolve(__dirname, 'static')));  
 
 
-// Підключення до MongoDB
-mongoose.connect('mongodb://localhost:27017/votechain', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('Connected to MongoDB succesfull');
-}).catch(err => {
-    console.log('MongoDB connection error:', err);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
+
