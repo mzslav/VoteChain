@@ -6,12 +6,15 @@ import connectToDatabase from './db.js';
 import cors from 'cors';
 
 
+
 import * as VotesController from './controllers/VotesController.js'
 
 
 const __dirname = path.resolve();
 const app = express();
 app.use(cors());
+app.use(express.json());
+
 
 async function startServer() {
     try {
@@ -22,20 +25,14 @@ async function startServer() {
     } catch (error) {
         console.log(`Cant open server on ${process.env.HTTP_PORT} | Time: ${Date.now()} | Error message: ${error}`);
     }
-
-    try {
-        await app.listen(process.env.HTTPS_PORT, () => {
-            console.log(`Server running on port ${process.env.HTTPS_PORT}`);
-        });   
-        await connectToDatabase();
-    } catch (error) {
-        console.log(`Cant open server on ${process.env.HTTPS_PORT} | Time: ${Date.now()} | Error message: ${error}`);
-    }
 }
 
 
 app.get('/votes/active',VotesController.GetActiveVotes);
 
+app.get('/votes/:id/details',VotesController.GetVotesDetails);
+
+app.post('/votes/create', VotesController.CreateVote);
 
 
 startServer();
