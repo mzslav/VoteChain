@@ -12,6 +12,7 @@
   "name": "votechain",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "serve": "nodemon app.js",
     "start": "node app.js"

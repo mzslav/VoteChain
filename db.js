@@ -2,19 +2,17 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 dotenv.config();
 
-const dbURI = process.env.DB_URI;
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(dbURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log('Succesful connect to MongoDB');
-    } catch (error) {
-        console.error('Connection error MongoDB:', error.message);
-        process.exit(1); 
+async function connectToDatabase(uri) {
+    try{
+        const uri = process.env.DB_CONECTION_STRING;
+        await mongoose.connect(uri);
+        console.log("Database is connected");
     }
-};
+    catch{
+        console.error("Database connection failed: ", error);
+            process.exit(1);
+    }    
+}
 
-export default connectDB; 
+export default connectToDatabase; 

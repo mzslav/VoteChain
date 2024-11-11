@@ -2,25 +2,33 @@ import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 import Poll from './models/Poll.js';  
-import connectDB from './db.js'; 
+import connectToDatabase from './db.js';
+import cors from 'cors';
 
-connectDB();
 
 const __dirname = path.resolve();
-const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3500;
-
 app.use(cors());
 
+async function startServer() {
+    try {
+        await app.listen(process.env.HTTP_PORT, () => {
+            console.log(`Server running on port ${process.env.HTTP_PORT}`);
+        });
+        await connectToDatabase();
+    } catch (error) {
+        console.log(`Cant open server on ${process.env.HTTP_PORT} | Time: ${Date.now()} | Error message: ${error}`);
+    }
+
+    try {
+        await app.listen(process.env.HTTPS_PORT, () => {
+            console.log(`Server running on port ${process.env.HTTPS_PORT}`);
+        });   
+        await connectToDatabase();
+    } catch (error) {
+        console.log(`Cant open server on ${process.env.HTTPS_PORT} | Time: ${Date.now()} | Error message: ${error}`);
+    }
+}
 
 
-
-
-
-
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
+startServer();
