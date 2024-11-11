@@ -6,6 +6,9 @@ import connectToDatabase from './db.js';
 import cors from 'cors';
 
 
+import * as VotesController from './controllers/VotesController.js'
+
+
 const __dirname = path.resolve();
 const app = express();
 app.use(cors());
@@ -29,6 +32,10 @@ async function startServer() {
         console.log(`Cant open server on ${process.env.HTTPS_PORT} | Time: ${Date.now()} | Error message: ${error}`);
     }
 }
+
+
+app.get('/votes/active',VotesController.GetActiveVotes);
+
 
 
 startServer();

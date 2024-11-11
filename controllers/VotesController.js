@@ -1,0 +1,1 @@
+export const GetActiveVotes = async (req, res) => ({})
