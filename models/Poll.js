@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-
 const pollSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -12,21 +11,20 @@ const pollSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 10,
-    maxlength: 300
+    maxlength: 300,
   },
-  options:
-    {
-      optionText: {
-        type: String,
-        required: true,
-        maxlength: 100
-      },
-      voteCount: {
-        type: Number,
-        default: 0,
-        required: true,
-      },
+  options: [{
+    optionText: {
+      type: String,
+      required: true,
+      maxlength: 100,
     },
+    voteCount: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -50,4 +48,3 @@ const pollSchema = new mongoose.Schema({
 const Poll = mongoose.model('Poll', pollSchema);
 
 export default Poll;
-
