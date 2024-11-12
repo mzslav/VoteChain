@@ -25,6 +25,14 @@ async function startServer() {
     } catch (error) {
         console.log(`Cant open server on ${process.env.HTTP_PORT} | Time: ${Date.now()} | Error message: ${error}`);
     }
+    try {
+        await app.listen(process.env.HTTPS_PORT, () => {
+            console.log(`Server running on port ${process.env.HTTPS_PORT}`);
+        });   
+        await connectToDatabase();
+    } catch (error) {
+        console.log(`Cant open server on ${process.env.HTTPS_PORT} | Time: ${Date.now()} | Error message: ${error}`);
+    }
 }
 
 
