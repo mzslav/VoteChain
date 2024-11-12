@@ -7,7 +7,23 @@ import cors from 'cors';
 import VoteModel from '../models/Vote.js';
 import Vote from '../models/Vote.js';
 
-export const GetActiveVotes = async (req, res) => {};
+export const GetAllVotes = async (req, res) => {
+    try {
+        
+        const polls = await Poll.find().sort({ _id: 1 }).lean();
+
+        if (!polls || polls.length === 0) {
+            return res.status(404).json({ message: "No polls found" });
+        }
+
+        res.status(200).json(polls);
+    } catch (error) {
+        console.error("Error retrieving polls: ", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
 
 
 

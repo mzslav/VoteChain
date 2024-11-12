@@ -36,7 +36,9 @@ async function startServer() {
 }
 
 
-app.get('/votes/active',VotesController.GetActiveVotes);
+
+
+app.get('/votes/all',VotesController.GetAllVotes);
 
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
 
