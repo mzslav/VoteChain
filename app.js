@@ -2,21 +2,47 @@ import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 import Poll from './models/Poll.js';  
+import connectToDatabase from './db.js';
+import cors from 'cors';
+
+
+
+import * as VotesController from './controllers/VotesController.js'
+
 
 const __dirname = path.resolve();
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-app.use(express.json());  
-app.use(express.static(path.resolve(__dirname, 'static')));  
+app.use(cors());
+app.use(express.json());
 
 
-// Підключення до MongoDB
-mongoose.connect('mongodb://localhost:27017/votechain', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('Connected to MongoDB');
-}).catch(err => {
-    console.log('MongoDB connection error:', err);
-});
+async function startServer() {
+    try {
+        await app.listen(process.env.HTTP_PORT, () => {
+            console.log(`Server running on port ${process.env.HTTP_PORT}`);
+        });
+        await connectToDatabase();
+    } catch (error) {
+        console.log(`Cant open server on ${process.env.HTTP_PORT} | Time: ${Date.now()} | Error message: ${error}`);
+    }
+    try {
+        await app.listen(process.env.HTTPS_PORT, () => {
+            console.log(`Server running on port ${process.env.HTTPS_PORT}`);
+        });   
+        await connectToDatabase();
+    } catch (error) {
+        console.log(`Cant open server on ${process.env.HTTPS_PORT} | Time: ${Date.now()} | Error message: ${error}`);
+    }
+}
+
+
+
+
+app.get('/votes/all',VotesController.GetAllVotes);
+
+app.get('/votes/:id/details',VotesController.GetVotesDetails);
+
+app.post('/votes/create', VotesController.CreateVote);
+
+
+startServer();
