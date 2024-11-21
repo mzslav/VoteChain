@@ -24,15 +24,12 @@ export const GetAllVotes = async (req, res) => {
 };
 
 
-
-
-
 export const GetVotesDetails = async (req, res) => {
     try {
         const pollId = req.params.id;
         
         const pollDetails = await Poll.findById(pollId)
-            .select('title description options endTime isClosed contractAddress createdAt') 
+            .select('title description options endTime isClosed contractAddress createdAt views') 
             .lean();
 
         if (!pollDetails) {
@@ -48,6 +45,34 @@ export const GetVotesDetails = async (req, res) => {
             isClosed: pollDetails.isClosed,
             contractAddress: pollDetails.contractAddress,
             createdAt: pollDetails.createdAt,
+            views: pollDetails.views,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+export const viewCount = async (req, res) => {
+    try {
+        const pollId = req.params.id;
+
+
+        const poll_Count = await Poll.findById(pollId);
+
+        if (!poll_Count) {
+            return res.status(404).json({ message: 'Vote not found' });
+        }
+
+        poll_Count.views = (poll_Count.views || 0) + 1;
+
+
+        await poll_Count.save();
+
+        res.status(200).json({
+            message: 'View count updated successfully',
+            views: poll_Count.views,
         });
     } catch (error) {
         console.error(error);

@@ -3,11 +3,13 @@ import mongoose from 'mongoose';
 import path from 'path';
 import Poll from './models/Poll.js';  
 import connectToDatabase from './db.js';
+import * as UserController from './controllers/UserController.js'
 import cors from 'cors';
 
 
 
 import * as VotesController from './controllers/VotesController.js'
+import checkToken from './utils/checkToken.js';
 
 
 const __dirname = path.resolve();
@@ -36,13 +38,15 @@ async function startServer() {
 }
 
 
-
+app.post('/login',UserController.connectUser)
 
 app.get('/votes/all',VotesController.GetAllVotes);
 
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
+app.post('/votes/:id/details', VotesController.viewCount);
 
-app.post('/votes/create', VotesController.CreateVote);
+
+app.post('/votes/create',checkToken, VotesController.CreateVote);
 
 
 startServer();
