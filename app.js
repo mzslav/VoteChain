@@ -43,6 +43,8 @@ app.post('/login',UserController.connectUser)
 app.get('/votes/all',VotesController.GetAllVotes);
 
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
+app.post('/votes/:id/details', VotesController.viewCount);
+
 
 app.post('/votes/create',checkToken, VotesController.CreateVote);
 
