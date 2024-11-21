@@ -43,6 +43,10 @@ const pollSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  views: {
+    type: Number,
+    default: 0, 
+},
 });
 
 const Poll = mongoose.model('Poll', pollSchema);
