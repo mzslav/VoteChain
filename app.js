@@ -10,7 +10,7 @@ import cors from 'cors';
 
 import * as VotesController from './controllers/VotesController.js'
 import checkToken from './utils/checkToken.js';
-
+import handleComplains from './utils/delete_vote_by_complains.js';
 
 const __dirname = path.resolve();
 const app = express();
@@ -45,8 +45,10 @@ app.get('/votes/all',VotesController.GetAllVotes);
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
 app.post('/votes/:id/details', VotesController.viewCount);
 
+app.post('/votes/:id/complain',  VotesController.Complain, handleComplains);
 
-app.post('/votes/create',checkToken, VotesController.CreateVote);
+
+app.post('/votes/create', VotesController.CreateVote);
 
 
 startServer();

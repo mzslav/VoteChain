@@ -110,3 +110,28 @@ export const CreateVote = async (req, res) => {
         res.status(500).json({ message: 'Error creating vote', error: error.message });
     }
 };
+
+
+export const Complain = async (req, res,next) => {
+    try {
+        const pollId = req.params.id;
+
+
+        const poll_Count = await Poll.findById(pollId);
+
+        if (!poll_Count) {
+            return res.status(404).json({ message: 'Vote not found' });
+        }
+
+        poll_Count.complains = (poll_Count.complains || 0) + 1;
+
+
+        await poll_Count.save();
+        
+        next();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
