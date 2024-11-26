@@ -6,8 +6,8 @@ import connectToDatabase from './db.js';
 import * as UserController from './controllers/UserController.js'
 import cors from 'cors';
 
-
-
+import { closePollbyTime } from './utils/check_polls.js';
+import * as voteProccesor from './services/voteProcessor.js'
 import * as VotesController from './controllers/VotesController.js'
 import checkToken from './utils/checkToken.js';
 import handleComplains from './utils/delete_vote_by_complains.js';
@@ -37,6 +37,7 @@ async function startServer() {
     }
 }
 
+closePollbyTime();
 
 app.post('/login',UserController.connectUser)
 
@@ -44,6 +45,10 @@ app.get('/votes/all',VotesController.GetAllVotes);
 
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
 app.post('/votes/:id/details', VotesController.viewCount);
+
+app.get('/votes/:id/vote',voteProccesor.getAllOptions);
+app.post('/votes/:id/vote/:id_vote',voteProccesor.toVoteByOption);
+
 
 app.post('/votes/:id/complain',  VotesController.Complain, handleComplains);
 
