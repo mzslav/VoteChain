@@ -3,9 +3,7 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js';
 
 export const connectUser = async (req, res) => {
-    
     try {
-
         const { metamaskAdress } = req.body;
 
         if (!metamaskAdress) {
@@ -14,6 +12,7 @@ export const connectUser = async (req, res) => {
                 message: 'MetaMask address is required',
             });
         }
+
         let user = await User.findOne({ metamaskAdress });
 
         let message;
@@ -30,7 +29,7 @@ export const connectUser = async (req, res) => {
 
         // Генеруємо JWT токен для користувача
         const token = jwt.sign(
-            { userID: user._id, metamaskAdress: user.metamaskAdress },
+            { userID: user._id, metamaskAdress: user.metamaskAdress },  // Використовуємо _id
             process.env.JWT_CODE, 
             { expiresIn: '5h' } 
         );
@@ -38,7 +37,7 @@ export const connectUser = async (req, res) => {
         return res.json({
             success: true,
             message: message,
-            ... user,
+            ...user._doc,  // Додаємо всі дані користувача, без поля userID
             token: token, 
         });
 
@@ -50,3 +49,4 @@ export const connectUser = async (req, res) => {
         });
     }
 };
+
