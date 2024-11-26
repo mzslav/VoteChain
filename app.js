@@ -6,7 +6,7 @@ import connectToDatabase from './db.js';
 import * as UserController from './controllers/UserController.js'
 import cors from 'cors';
 
-
+import { closePollbyTime } from './utils/check_polls.js';
 import * as voteProccesor from './services/voteProcessor.js'
 import * as VotesController from './controllers/VotesController.js'
 import checkToken from './utils/checkToken.js';
@@ -37,6 +37,7 @@ async function startServer() {
     }
 }
 
+closePollbyTime();
 
 app.post('/login',UserController.connectUser)
 
