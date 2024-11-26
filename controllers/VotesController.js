@@ -8,15 +8,39 @@ import VoteModel from '../models/Vote.js';
 import Vote from '../models/Vote.js';
 
 export const GetAllVotes = async (req, res) => {
+    const { sort = 'createdAt', order = 'asc', isClosed, search } = req.query;
+
     try {
+      
+        let filter = {};
+           
+        if (isClosed !== undefined) {
+            filter.isClosed = isClosed === 'true'; 
+        }
+   
+        if (search) {
+            filter.title = { $regex: search, $options: 'i' }; 
+        }
         
-        const polls = await Poll.find().sort({ _id: 1 }).lean();
+        let sortCriteria = {};
+        if (sort === 'views') {
+            sortCriteria = { views: order === 'desc' ? -1 : 1 }; 
+        } else if (sort === 'isClosed') {
+            sortCriteria = { isClosed: order === 'desc' ? -1 : 1 }; 
+        } else {
+            sortCriteria = { [sort]: order === 'desc' ? -1 : 1 }; 
+        }
+
+        
+        const polls = await Poll.find(filter)
+            .sort(sortCriteria) 
+            .lean();
 
         if (!polls || polls.length === 0) {
             return res.status(404).json({ message: "No polls found" });
         }
 
-        res.status(200).json(polls);
+        res.status(200).json(polls); 
     } catch (error) {
         console.error("Error retrieving polls: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
