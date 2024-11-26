@@ -19,6 +19,10 @@ const pollSchema = new mongoose.Schema({
       required: true,
       maxlength: 100,
     },
+    optionId: {  // додатковий унікальний ID для кожної опції
+      type: mongoose.Schema.Types.ObjectId,
+      default: mongoose.Types.ObjectId,
+    },
     voteCount: {
       type: Number,
       default: 0,
@@ -50,6 +54,10 @@ const pollSchema = new mongoose.Schema({
   complains:{
     type: Number,
     default: 0,
+  },
+  winner: {  
+    type: String,
+    default: null,  
   },
 
 });
