@@ -27,32 +27,30 @@ export const toVoteByOption = async (req, res) => {
     const pollID = req.params.id;
     const chosenOptionID = req.params.id_vote;
     
-    // Шукаємо голосування
+ 
     const poll = await Poll.findById(pollID);
     
     if (!poll) {
         return res.status(404).json({ message: 'Poll not found' });
     }
 
-    // Перевірка, чи голосування закрите
+  
     if (poll.isClosed) {
         return res.status(400).json({ message: 'This poll is closed, you cannot vote.' });
     }
 
-    // Перевірка, чи користувач вже голосував
+   
     const existingVote = await Vote.findOne({ userID, pollId: pollID });
     if (existingVote) {
         return res.status(400).json({ message: 'You have already voted in this poll' });
     }
 
-    // Знаходимо відповідну опцію для голосування
     const chosenOption = poll.options.find(opt => opt.optionId.toString() === chosenOptionID);
     
     if (!chosenOption) {
         return res.status(400).json({ message: 'Invalid option' });
     }
     
-    // Зберігаємо голос користувача
     const vote = new Vote({
         userID,
         pollId: pollID,

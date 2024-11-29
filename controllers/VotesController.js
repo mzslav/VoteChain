@@ -6,12 +6,19 @@ import connectToDatabase from '../db.js';
 import cors from 'cors';
 import VoteModel from '../models/Vote.js';
 import Vote from '../models/Vote.js';
+import { aggregatePolls } from '../services/aggregation.js'
+
+
 
 export const GetAllVotes = async (req, res) => {
     const { sort = 'createdAt', order = 'asc', isClosed, search } = req.query;
 
     try {
       
+        const type = req.query.type || 'created'; // "active" або "created"
+        const period = req.query.period || '7days'; // "7days", "1month", "6months", "1year"
+
+
         let filter = {};
            
         if (isClosed !== undefined) {
@@ -31,6 +38,7 @@ export const GetAllVotes = async (req, res) => {
             sortCriteria = { [sort]: order === 'desc' ? -1 : 1 }; 
         }
 
+        const statistics = await aggregatePolls(type, period);
         
         const polls = await Poll.find(filter)
             .sort(sortCriteria) 
@@ -40,7 +48,8 @@ export const GetAllVotes = async (req, res) => {
             return res.status(404).json({ message: "No polls found" });
         }
 
-        res.status(200).json(polls); 
+
+        res.status(200).json({polls,statistics}); 
     } catch (error) {
         console.error("Error retrieving polls: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -159,3 +168,4 @@ export const Complain = async (req, res,next) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
