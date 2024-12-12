@@ -11,6 +11,7 @@ import * as voteProccesor from './services/voteProcessor.js'
 import * as VotesController from './controllers/VotesController.js'
 import checkToken from './utils/checkToken.js';
 import handleComplains from './utils/delete_vote_by_complains.js';
+import  { checkDIDVerified } from './utils/DIDverified.js';
 
 const __dirname = path.resolve();
 const app = express();
@@ -42,18 +43,24 @@ closePollbyTime();
 app.post('/login',UserController.connectUser)
 
 app.get('/votes/all',VotesController.GetAllVotes);
+app.get('/profile/myVotes', checkToken, UserController.getAllMyVotes); // (Отримати всі мої віддані голоси)
+app.get('/profile/myPolls', checkToken, UserController.getAllMyPolls); // (Отримати всі мої створенні голосування)
+
+
 
 app.get('/votes/:id/details',VotesController.GetVotesDetails);
 app.post('/votes/:id/details', VotesController.viewCount);
 
 app.get('/votes/:id/vote',voteProccesor.getAllOptions);
-app.post('/votes/:id/vote/:id_vote',voteProccesor.toVoteByOption);
+app.post('/votes/:id/vote/:id_vote', checkToken, voteProccesor.toVoteByOption);
+
+app.post('/profile/getConfirm', checkToken, UserController.getConfirm); // підтвредження особи(верифікація)
 
 
 app.post('/votes/:id/complain',  VotesController.Complain, handleComplains);
 
 
-app.post('/votes/create', VotesController.CreateVote);
+app.post('/votes/create', checkToken,  checkDIDVerified,  VotesController.CreateVote);
 
 
 startServer();
