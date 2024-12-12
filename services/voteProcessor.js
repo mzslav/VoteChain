@@ -27,19 +27,18 @@ export const toVoteByOption = async (req, res) => {
     const pollID = req.params.id;
     const chosenOptionID = req.params.id_vote;
     
- 
     const poll = await Poll.findById(pollID);
     
     if (!poll) {
         return res.status(404).json({ message: 'Poll not found' });
     }
 
-  
+    // Перевіряємо, чи голосування вже закрите
     if (poll.isClosed) {
         return res.status(400).json({ message: 'This poll is closed, you cannot vote.' });
     }
 
-   
+    // Перевіряємо, чи вже був голос від цього користувача
     const existingVote = await Vote.findOne({ userID, pollId: pollID });
     if (existingVote) {
         return res.status(400).json({ message: 'You have already voted in this poll' });
@@ -50,12 +49,14 @@ export const toVoteByOption = async (req, res) => {
     if (!chosenOption) {
         return res.status(400).json({ message: 'Invalid option' });
     }
-    
+
+    // Створюємо новий голос, додаючи MetaMask-адресу
     const vote = new Vote({
         userID,
         pollId: pollID,
         chosenOption: chosenOption.optionId,
         chosenOptionText: chosenOption.optionText,
+        metamaskAdress: req.metamaskAdress,  // Використовуємо MetaMask-адресу з мідлвару
     });
     
     await vote.save();

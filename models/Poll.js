@@ -59,6 +59,10 @@ const pollSchema = new mongoose.Schema({
     type: String,
     default: null,  
   },
+  owner: { // MetaMask-адреса власника голосування
+    type: String,
+    required: true,
+  },
 });
 
 const Poll = mongoose.model('Poll', pollSchema);

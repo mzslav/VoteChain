@@ -16,16 +16,18 @@ const voteSchema = new mongoose.Schema({
     immutable: true,
   },
   chosenOption: {
-    type: mongoose.Schema.Types.ObjectId,  // ID вибраної опції
-    ref: 'Poll.options',  // Вказуємо на поле опцій у моделі Poll
+    type: mongoose.Schema.Types.ObjectId,  // Просто ID вибраної опції
     required: true,
   },
   chosenOptionText: {  // Текст вибраної опції для відображення
     type: String,
     required: true,
   },
+  metamaskAdress: { // Нове поле для зберігання MetaMask-адреси користувача
+    type: String,
+    required: true,
+  },
 });
-
 
 const Vote = mongoose.model("Vote", voteSchema);
 
