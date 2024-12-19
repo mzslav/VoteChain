@@ -63,6 +63,10 @@ const pollSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  imageUrl: {  // Додаємо поле для картинки
+    type: String,
+    required: false,  // Поле не є обов'язковим
+  },
 });
 
 const Poll = mongoose.model('Poll', pollSchema);

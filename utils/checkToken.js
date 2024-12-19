@@ -1,28 +1,21 @@
 import jwt from 'jsonwebtoken';
 
-export default (req, res, next) => { 
-
-   
+export default (req, res, next) => {
     const token = (req.headers.authorization || '').replace(/Bearer\s?/, '');
 
-    if(token){
-
+    if (token) {
         try {
-            const decoded = jwt.verify(token,process.env.JWT_CODE);
-            req.metamaskAdress = decoded.metamaskAdress;
+            const decoded = jwt.verify(token, process.env.JWT_CODE);
+            req.metamaskAdress = decoded.metamaskAdress; // залишаємо "Adress"
             next();
-
-        }
-         catch (error) {
+        } catch (error) {
             return res.status(403).json({
-                message: 'token enspiredddd',
+                message: 'Token expired or invalid',
             });
-
         }
-    }else{
+    } else {
         return res.status(403).json({
-            message: 'token enspired',
+            message: 'Token is required',
         });
     }
-
-}
+};

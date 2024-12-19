@@ -153,6 +153,7 @@ export const getAllMyVotes = async (req, res) => {
                 chosenOptionId: chosenOption.optionId,
                 pollEndTime: vote.pollId.endTime,
                 voteTime: vote.createdAt,
+                pollImageUrl: vote.pollId.imageUrl,  // Додаємо картинку
             };
         });
 
@@ -171,6 +172,7 @@ export const getAllMyVotes = async (req, res) => {
         });
     }
 };
+
 
 export const getAllMyPolls = async (req, res) => {
     try {
@@ -205,6 +207,7 @@ export const getAllMyPolls = async (req, res) => {
             pollViews: poll.views,
             pollComplains: poll.complains,
             pollWinner: poll.winner,
+            pollImageUrl: poll.imageUrl,  // Додаємо картинку
         }));
 
         // Відправляємо відповідь
@@ -222,4 +225,5 @@ export const getAllMyPolls = async (req, res) => {
         });
     }
 };
+
 
