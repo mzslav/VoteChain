@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import Poll from './Poll.js';
 
 const userSchema = new mongoose.Schema({
   metamaskAdress: {
@@ -20,6 +20,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  pollIds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Poll', 
+    },
+  ],
   
 },
 {

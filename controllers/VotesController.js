@@ -6,12 +6,20 @@ import connectToDatabase from '../db.js';
 import cors from 'cors';
 import VoteModel from '../models/Vote.js';
 import Vote from '../models/Vote.js';
+import User from '../models/User.js';
+import { aggregatePolls } from '../services/aggregation.js'
+
+
 
 export const GetAllVotes = async (req, res) => {
     const { sort = 'createdAt', order = 'asc', isClosed, search } = req.query;
 
     try {
       
+        const type = req.query.type || 'created'; // "active" або "created"
+        const period = req.query.period || '7days'; // "7days", "1month", "6months", "1year"
+
+
         let filter = {};
            
         if (isClosed !== undefined) {
@@ -31,6 +39,7 @@ export const GetAllVotes = async (req, res) => {
             sortCriteria = { [sort]: order === 'desc' ? -1 : 1 }; 
         }
 
+        const statistics = await aggregatePolls(type, period);
         
         const polls = await Poll.find(filter)
             .sort(sortCriteria) 
@@ -40,7 +49,8 @@ export const GetAllVotes = async (req, res) => {
             return res.status(404).json({ message: "No polls found" });
         }
 
-        res.status(200).json(polls); 
+
+        res.status(200).json({polls,statistics}); 
     } catch (error) {
         console.error("Error retrieving polls: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -107,24 +117,46 @@ export const viewCount = async (req, res) => {
 
 export const CreateVote = async (req, res) => {
     try {
+        // Отримуємо дані з тіла запиту
         const { title, description, options, endTime, contractAddress } = req.body;
-
-
+        
+        // Перевіряємо наявність необхідних полів
         if (!title || !description || !options || !endTime || !contractAddress) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
+        // Отримуємо MetaMask-адресу з мідлвару
+        const metamaskAdress = req.metamaskAdress;
+
+        // Якщо немає MetaMask адреси, повертаємо помилку
+        if (!metamaskAdress) {
+            return res.status(403).json({ message: 'MetaMask address not found in token' });
+        }
+
+        // Створюємо нове голосування з переданими даними та MetaMask-адресою як власника
         const newVote = new Poll({
             title,
             description,
             options,
             endTime,
-            contractAddress
+            contractAddress,
+            owner: metamaskAdress,  // Власник голосування — MetaMask-адреса
         });
 
+        // Зберігаємо голосування в базі даних
         await newVote.save();
 
+        // Знаходимо користувача по MetaMask-адресі та додаємо нове голосування в його профіль
+        const user = await User.findOne({ metamaskAdress });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
+        // Оновлюємо список голосувань у користувача
+        user.pollIds.push(newVote._id);
+        await user.save();
+
+        // Повертаємо успішну відповідь
         res.status(201).json({
             message: 'Vote created successfully',
             vote: newVote
@@ -134,6 +166,7 @@ export const CreateVote = async (req, res) => {
         res.status(500).json({ message: 'Error creating vote', error: error.message });
     }
 };
+
 
 
 export const Complain = async (req, res,next) => {
@@ -159,3 +192,4 @@ export const Complain = async (req, res,next) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+

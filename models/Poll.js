@@ -19,6 +19,10 @@ const pollSchema = new mongoose.Schema({
       required: true,
       maxlength: 100,
     },
+    optionId: {  // додатковий унікальний ID для кожної опції
+      type: mongoose.Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId(), // Генерація нового ObjectId
+    },
     voteCount: {
       type: Number,
       default: 0,
@@ -47,11 +51,18 @@ const pollSchema = new mongoose.Schema({
     type: Number,
     default: 0, 
   },
-  complains:{
+  complains: {
     type: Number,
     default: 0,
   },
-
+  winner: {  
+    type: String,
+    default: null,  
+  },
+  owner: { // MetaMask-адреса власника голосування
+    type: String,
+    required: true,
+  },
 });
 
 const Poll = mongoose.model('Poll', pollSchema);
