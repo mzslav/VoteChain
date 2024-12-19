@@ -8,6 +8,8 @@ import VoteModel from '../models/Vote.js';
 import Vote from '../models/Vote.js';
 import User from '../models/User.js';
 import { aggregatePolls } from '../services/aggregation.js'
+import { VoteValidation } from '../validations/voteValidation.js';
+import { validationResult } from 'express-validator';
 
 
 
@@ -63,7 +65,7 @@ export const GetVotesDetails = async (req, res) => {
         const pollId = req.params.id;
         
         const pollDetails = await Poll.findById(pollId)
-            .select('title description options endTime isClosed contractAddress createdAt views') 
+            .select('title description options endTime isClosed contractAddress createdAt views imageUrl') // Додаємо imageUrl
             .lean();
 
         if (!pollDetails) {
@@ -80,6 +82,7 @@ export const GetVotesDetails = async (req, res) => {
             contractAddress: pollDetails.contractAddress,
             createdAt: pollDetails.createdAt,
             views: pollDetails.views,
+            imageUrl: pollDetails.imageUrl,  // Додаємо imageUrl до відповіді
         });
     } catch (error) {
         console.error(error);
@@ -116,56 +119,75 @@ export const viewCount = async (req, res) => {
 
 
 export const CreateVote = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            success: false,
+            message: 'Validation failed',
+            errors: errors.array(),
+        });
+    }
+
     try {
-        // Отримуємо дані з тіла запиту
-        const { title, description, options, endTime, contractAddress } = req.body;
-        
-        // Перевіряємо наявність необхідних полів
-        if (!title || !description || !options || !endTime || !contractAddress) {
-            return res.status(400).json({ message: "Missing required fields" });
-        }
+        const { title, description, options, endTime, contractAddress, imageUrl } = req.body;
+        const metamaskAdress = req.metamaskAdress; // використовуємо "metamaskAdress"
 
-        // Отримуємо MetaMask-адресу з мідлвару
-        const metamaskAdress = req.metamaskAdress;
-
-        // Якщо немає MetaMask адреси, повертаємо помилку
         if (!metamaskAdress) {
-            return res.status(403).json({ message: 'MetaMask address not found in token' });
+            return res.status(403).json({
+                success: false,
+                message: 'MetaMask address not found in token',
+            });
         }
 
-        // Створюємо нове голосування з переданими даними та MetaMask-адресою як власника
-        const newVote = new Poll({
+        const existingVote = await Poll.findOne({ contractAddress });
+        if (existingVote) {
+            return res.status(400).json({
+                success: false,
+                message: 'A vote with this contract address already exists.',
+            });
+        }
+
+        const voteData = {
             title,
             description,
             options,
             endTime,
             contractAddress,
-            owner: metamaskAdress,  // Власник голосування — MetaMask-адреса
-        });
+            owner: metamaskAdress, // використовуємо "metamaskAdress"
+            imageUrl,  // Додаємо картинку
+        };
 
-        // Зберігаємо голосування в базі даних
+        // Створюємо новий запис голосування
+        const newVote = new Poll(voteData);
         await newVote.save();
 
-        // Знаходимо користувача по MetaMask-адресі та додаємо нове голосування в його профіль
-        const user = await User.findOne({ metamaskAdress });
+        // Оновлюємо профіль користувача
+        const user = await User.findOne({ metamaskAdress }); // використовуємо "metamaskAdress"
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
         }
 
-        // Оновлюємо список голосувань у користувача
         user.pollIds.push(newVote._id);
         await user.save();
 
-        // Повертаємо успішну відповідь
         res.status(201).json({
+            success: true,
             message: 'Vote created successfully',
-            vote: newVote
+            vote: newVote,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error creating vote', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create vote',
+            error: error.message,
+        });
     }
 };
+
 
 
 
