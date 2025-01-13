@@ -17,47 +17,53 @@ export const GetAllVotes = async (req, res) => {
     const { sort = 'createdAt', order = 'asc', isClosed, search } = req.query;
 
     try {
-      
         const type = req.query.type || 'created'; // "active" або "created"
-        const period = req.query.period || '7days'; // "7days", "1month", "6months", "1year"
-
 
         let filter = {};
-           
+
         if (isClosed !== undefined) {
-            filter.isClosed = isClosed === 'true'; 
-        }
-   
-        if (search) {
-            filter.title = { $regex: search, $options: 'i' }; 
-        }
-        
-        let sortCriteria = {};
-        if (sort === 'views') {
-            sortCriteria = { views: order === 'desc' ? -1 : 1 }; 
-        } else if (sort === 'isClosed') {
-            sortCriteria = { isClosed: order === 'desc' ? -1 : 1 }; 
-        } else {
-            sortCriteria = { [sort]: order === 'desc' ? -1 : 1 }; 
+            filter.isClosed = isClosed === 'true';
         }
 
-        const statistics = await aggregatePolls(type, period);
-        
+        if (search) {
+            filter.title = { $regex: search, $options: 'i' };
+        }
+
+        let sortCriteria = {
+            isClosed: 1, // Спочатку фільтруємо по isClosed
+            [sort]: order === 'desc' ? -1 : 1, // Потім сортуємо за іншими параметрами
+        };
+
+        // Отримання статистики для різних періодів
+        const periods = ['7days', '1month', '1year'];
+        const statistics = await Promise.all(
+            periods.map((period) => aggregatePolls(type, period))
+        );
+
+        // Отримання голосувань
         const polls = await Poll.find(filter)
-            .sort(sortCriteria) 
+            .sort(sortCriteria)
             .lean();
 
         if (!polls || polls.length === 0) {
             return res.status(404).json({ message: "No polls found" });
         }
 
-
-        res.status(200).json({polls,statistics}); 
+        res.status(200).json({
+            polls,
+            statistics: {
+                '7days': statistics[0],
+                '1month': statistics[1],
+                '1year': statistics[2],
+            },
+        });
     } catch (error) {
         console.error("Error retrieving polls: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+
 
 
 export const GetVotesDetails = async (req, res) => {
