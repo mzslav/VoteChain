@@ -261,3 +261,70 @@ export const getUser = async (req, res) => {
         });
     }
 };
+
+export const getUserVoteDetails = async (req, res) => {
+    try {
+        const metamaskAddress = req.metamaskAdress; // Беремо MetaMask адресу з токена
+
+        // Перевіряємо, чи є MetaMask-адреса
+        if (!metamaskAddress) {
+            return res.status(400).json({
+                success: false,
+                message: 'MetaMask address not found in token',
+            });
+        }
+
+        // Знаходимо користувача за MetaMask-адресою
+        const user = await User.findOne({ metamaskAdress: metamaskAddress });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+        }
+
+        const userID = user._id;  // Отримуємо userId з користувача
+        const pollID = req.params.id; // ID голосування з параметрів запиту
+
+        // Шукаємо існуючий голос цього користувача для зазначеного голосування
+        const existingVote = await Vote.findOne({ userID, pollId: pollID });
+        if (!existingVote) {
+            return res.status(404).json({
+                success: false,
+                message: 'You have not voted in this poll',
+            });
+        }
+
+        // Отримуємо варіант голосування, за який було віддано голос
+        const poll = await Poll.findById(pollID);
+        if (!poll) {
+            return res.status(404).json({
+                success: false,
+                message: 'Poll not found',
+            });
+        }
+
+        const chosenOption = poll.options.find(opt => opt.optionId.toString() === existingVote.chosenOption.toString());
+        if (!chosenOption) {
+            return res.status(404).json({
+                success: false,
+                message: 'Option not found',
+            });
+        }
+
+        // Повертаємо відповідь із деталями голосування
+        res.status(200).json({
+            success: true,
+            message: 'Vote details retrieved successfully',
+            vote: {
+                _id: chosenOption._id,
+                optionId: chosenOption.optionId,
+                optionTitle: chosenOption.optionText, // Заголовок варіанту
+                optionDescription: chosenOption.optionDescription || 'No description available', // Опис варіанту (якщо є)
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
