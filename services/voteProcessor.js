@@ -2,20 +2,29 @@ import Vote from '../models/Vote.js';
 import Poll from '../models/Poll.js';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
+
 export const getAllOptions = async (req, res) => {
     const pollId = req.params.id;
     const poll = await Poll.findById(pollId);
     
     if (!poll) {
-      return res.status(404).json({ message: 'Poll not found' });
+        return res.status(404).json({ message: 'Poll not found' });
     }
     
-    res.status(200).json({
-      title: poll.title,
-      options: poll.options,
-      pollId: poll._id
-    });
+    const response = {
+        title: poll.title,
+        options: poll.options,
+        pollId: poll._id
+    };
+
+    // Додаємо поле winner, якщо воно є і не дорівнює null
+    if (poll.winner !== null && poll.winner !== undefined) {
+        response.winner = poll.winner;
+    }
+
+    res.status(200).json(response);
 };
+
 
 
 export const toVoteByOption = async (req, res) => {

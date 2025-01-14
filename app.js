@@ -44,6 +44,7 @@ closePollbyTime();
 app.post('/login',UserController.connectUser)
 
 app.get('/votes/all',VotesController.GetAllVotes);
+app.get('/votes/dashboard',VotesController.getDashboard);
 app.get('/Account/MyVotes', checkToken, UserController.getAllMyVotes); // (Отримати всі мої віддані голоси)
 app.get('/Account', checkToken, UserController.getAllMyPolls); // (Отримати всі мої створенні голосування)
 

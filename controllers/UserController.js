@@ -149,10 +149,11 @@ export const getAllMyVotes = async (req, res) => {
                 pollDescription: vote.pollId.description,
                 chosenOptionText: chosenOption.optionText,
                 chosenOptionId: chosenOption.optionId,
-                pollEndTime: vote.pollId.endTime,
+                endTime: vote.pollId.endTime,
                 voteTime: vote.createdAt,
                 pollImageUrl: vote.pollId.imageUrl,  // Додаємо картинку
                 createdAt: vote.pollId.createdAt,
+                
             };
         });
 
