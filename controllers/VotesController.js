@@ -49,21 +49,29 @@ export const GetAllVotes = async (req, res) => {
 export const getDashboard = async (req, res) => {
     try {
         const now = new Date();
+
+        // Формуємо правильні періоди
         const periods = {
-            '7 days': Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)),
-            '1 month': Array.from({ length: 4 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7)),
-            '1 year': Array.from({ length: 12 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - i, 1)),
+            '7 days': Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)).reverse(),
+            '1 month': Array.from({ length: 4 }, (_, i) => {
+                const daysAgo = i * 7;
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo);
+            }).reverse(),
+            '1 year': Array.from({ length: 12 }, (_, i) => {
+                return new Date(now.getFullYear(), now.getMonth() - i, 1);
+            }).reverse(),
         };
 
+        // Логіка обчислення голосів
         const calculateVotes = async (field, dateArray) => {
             const votes = [];
-            for (let i = 0; i < dateArray.length - 1; i++) {
-                const start = dateArray[i + 1];
-                const end = dateArray[i];
+            for (let i = 0; i < dateArray.length; i++) {
+                const start = dateArray[i];
+                const end = i + 1 < dateArray.length ? dateArray[i + 1] : now;
                 const count = await Poll.countDocuments({
                     [field]: { $gte: start, $lt: end },
                 });
-                votes.unshift(count);
+                votes.push(count);
             }
             return votes;
         };
@@ -80,17 +88,18 @@ export const getDashboard = async (req, res) => {
             '1 year': await calculateVotes('createdAt', periods['1 year']),
         };
 
+        // Відповідь із результатами
         res.status(200).json({
-            statistics: {
-                activeVotes,
-                newVotes,
-            },
+            activeVotes,
+            newVotes,
         });
     } catch (error) {
         console.error("Error retrieving dashboard data: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+
 
 
 export const GetVotesDetails = async (req, res) => {
