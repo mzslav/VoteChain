@@ -17,8 +17,6 @@ export const GetAllVotes = async (req, res) => {
     const { sort = 'createdAt', order = 'asc', isClosed, search } = req.query;
 
     try {
-        const type = req.query.type || 'created'; // "active" або "created"
-
         let filter = {};
 
         if (isClosed !== undefined) {
@@ -30,35 +28,73 @@ export const GetAllVotes = async (req, res) => {
         }
 
         let sortCriteria = {
-            isClosed: 1, // Спочатку фільтруємо по isClosed
-            [sort]: order === 'desc' ? -1 : 1, // Потім сортуємо за іншими параметрами
+            isClosed: 1,
+            [sort]: order === 'desc' ? -1 : 1,
         };
 
-        // Отримання статистики для різних періодів
-        const periods = ['7days', '1month', '1year'];
-        const statistics = await Promise.all(
-            periods.map((period) => aggregatePolls(type, period))
-        );
-
-        // Отримання голосувань
-        const polls = await Poll.find(filter)
-            .sort(sortCriteria)
-            .lean();
+        const polls = await Poll.find(filter).sort(sortCriteria).lean();
 
         if (!polls || polls.length === 0) {
             return res.status(404).json({ message: "No polls found" });
         }
 
-        res.status(200).json({
-            polls,
-            statistics: {
-                '7days': statistics[0],
-                '1month': statistics[1],
-                '1year': statistics[2],
-            },
-        });
+        res.status(200).json({ polls });
     } catch (error) {
         console.error("Error retrieving polls: ", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+export const getDashboard = async (req, res) => {
+    try {
+        const now = new Date();
+
+        // Формуємо правильні періоди
+        const periods = {
+            '7 days': Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)).reverse(),
+            '1 month': Array.from({ length: 4 }, (_, i) => {
+                const daysAgo = i * 7;
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo);
+            }).reverse(),
+            '1 year': Array.from({ length: 12 }, (_, i) => {
+                return new Date(now.getFullYear(), now.getMonth() - i, 1);
+            }).reverse(),
+        };
+
+        // Логіка обчислення голосів
+        const calculateVotes = async (field, dateArray) => {
+            const votes = [];
+            for (let i = 0; i < dateArray.length; i++) {
+                const start = dateArray[i];
+                const end = i + 1 < dateArray.length ? dateArray[i + 1] : now;
+                const count = await Poll.countDocuments({
+                    [field]: { $gte: start, $lt: end },
+                });
+                votes.push(count);
+            }
+            return votes;
+        };
+
+        const activeVotes = {
+            '7 days': await calculateVotes('endTime', periods['7 days']),
+            '1 month': await calculateVotes('endTime', periods['1 month']),
+            '1 year': await calculateVotes('endTime', periods['1 year']),
+        };
+
+        const newVotes = {
+            '7 days': await calculateVotes('createdAt', periods['7 days']),
+            '1 month': await calculateVotes('createdAt', periods['1 month']),
+            '1 year': await calculateVotes('createdAt', periods['1 year']),
+        };
+
+        // Відповідь із результатами
+        res.status(200).json({
+            activeVotes,
+            newVotes,
+        });
+    } catch (error) {
+        console.error("Error retrieving dashboard data: ", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
@@ -69,16 +105,16 @@ export const GetAllVotes = async (req, res) => {
 export const GetVotesDetails = async (req, res) => {
     try {
         const pollId = req.params.id;
-        
+
         const pollDetails = await Poll.findById(pollId)
-            .select('title description options endTime isClosed contractAddress createdAt views imageUrl') // Додаємо imageUrl
+            .select('title description options endTime isClosed contractAddress createdAt views imageUrl winner') // Додаємо winner
             .lean();
 
         if (!pollDetails) {
             return res.status(404).json({ message: 'Vote not found' });
         }
 
-        res.status(200).json({
+        const response = {
             id: pollDetails._id,
             title: pollDetails.title,
             description: pollDetails.description,
@@ -89,7 +125,14 @@ export const GetVotesDetails = async (req, res) => {
             createdAt: pollDetails.createdAt,
             views: pollDetails.views,
             imageUrl: pollDetails.imageUrl,  // Додаємо imageUrl до відповіді
-        });
+        };
+
+        // Додаємо поле winner, якщо воно є і не дорівнює null
+        if (pollDetails.winner !== null && pollDetails.winner !== undefined) {
+            response.winner = pollDetails.winner;
+        }
+
+        res.status(200).json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

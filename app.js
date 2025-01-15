@@ -44,6 +44,7 @@ closePollbyTime();
 app.post('/login',UserController.connectUser)
 
 app.get('/votes/all',VotesController.GetAllVotes);
+app.get('/votes/dashboard',VotesController.getDashboard);
 app.get('/Account/MyVotes', checkToken, UserController.getAllMyVotes); // (Отримати всі мої віддані голоси)
 app.get('/Account', checkToken, UserController.getAllMyPolls); // (Отримати всі мої створенні голосування)
 
@@ -57,6 +58,7 @@ app.post('/votes/:id/vote/:id_vote', checkToken, voteProccesor.toVoteByOption);
 
 app.post('/profile/getConfirm', checkToken, UserController.getConfirm); // підтвредження особи(верифікація)
 app.get('/profile/getUser', checkToken, UserController.getUser); 
+app.get('/votes/:id', checkToken, UserController.getUserVoteDetails); 
 
 
 app.post('/votes/:id/complain',  VotesController.Complain, handleComplains);
