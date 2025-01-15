@@ -38,7 +38,7 @@ const calculateResults = (poll) => {
     poll.options.forEach(option => {
         if (option.voteCount > maxVotes) {
             maxVotes = option.voteCount;
-            winner = option.optionText;
+            winner = option.optionId;
         }
     });
 

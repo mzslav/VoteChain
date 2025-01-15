@@ -19,6 +19,11 @@ const pollSchema = new mongoose.Schema({
       required: true,
       maxlength: 100,
     },
+    description: { 
+      type: String,
+      required: false,  
+      maxlength: 200, 
+    },
     optionId: {  // додатковий унікальний ID для кожної опції
       type: mongoose.Schema.Types.ObjectId,
       default: () => new mongoose.Types.ObjectId(), // Генерація нового ObjectId
@@ -62,6 +67,10 @@ const pollSchema = new mongoose.Schema({
   owner: { // MetaMask-адреса власника голосування
     type: String,
     required: true,
+  },
+  imageUrl: {  // Додаємо поле для картинки
+    type: String,
+    required: false,  // Поле не є обов'язковим
   },
 });
 
