@@ -313,7 +313,7 @@ export const getUserVoteDetails = async (req, res) => {
             });
         }
 
-        // Повертаємо відповідь із деталями голосування
+        // Повертаємо відповідь із деталями голосування та transactionAddress
         res.status(200).json({
             success: true,
             message: 'Vote details retrieved successfully',
@@ -322,6 +322,7 @@ export const getUserVoteDetails = async (req, res) => {
                 optionId: chosenOption.optionId,
                 optionTitle: chosenOption.optionText, // Заголовок варіанту
                 optionDescription: chosenOption.optionDescription || 'No description available', // Опис варіанту (якщо є)
+                transactionAddress: existingVote.transactionAddress, // Додаємо транзакційну адресу
             }
         });
     } catch (error) {
@@ -329,3 +330,4 @@ export const getUserVoteDetails = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
