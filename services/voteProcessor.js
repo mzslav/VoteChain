@@ -76,13 +76,20 @@ export const toVoteByOption = async (req, res) => {
             return res.status(400).json({ message: 'Invalid option' });
         }
 
-        // Створюємо новий голос, додаючи MetaMask-адресу
+        // Отримуємо адресу транзакції з тіла запиту
+        const transactionAddress = req.body.transactionAddress;
+        if (!transactionAddress) {
+            return res.status(400).json({ message: 'Transaction address is required' });
+        }
+
+        // Створюємо новий голос, додаючи MetaMask-адресу і транзакційну адресу
         const vote = new Vote({
             userID,
             pollId: pollID,
             chosenOption: chosenOption.optionId,
             chosenOptionText: chosenOption.optionText,
-            metamaskAdress: req.metamaskAdress,  // Використовуємо MetaMask-адресу з мідлвару
+            metamaskAdress: req.metamaskAdress, // Використовуємо MetaMask-адресу з мідлвару
+            transactionAddress, // Записуємо транзакційну адресу
         });
 
         await vote.save();
@@ -97,3 +104,4 @@ export const toVoteByOption = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
