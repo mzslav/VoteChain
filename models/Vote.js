@@ -27,6 +27,9 @@ const voteSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  transactionAddress: {
+    type: String,
+  }
 });
 
 const Vote = mongoose.model("Vote", voteSchema);

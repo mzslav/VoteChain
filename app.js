@@ -54,7 +54,7 @@ app.get('/votes/:id/details',VotesController.GetVotesDetails);
 app.post('/votes/:id/details', VotesController.viewCount);
 
 app.get('/votes/:id/vote',voteProccesor.getAllOptions);
-app.post('/votes/:id/vote/:id_vote', checkToken, voteProccesor.toVoteByOption);
+app.post('/votes/:id/vote/:id_vote', checkToken, checkDIDVerified, voteProccesor.toVoteByOption);
 
 app.post('/profile/getConfirm', checkToken, UserController.getConfirm); // підтвредження особи(верифікація)
 app.get('/profile/getUser', checkToken, UserController.getUser); 
