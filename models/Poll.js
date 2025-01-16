@@ -70,7 +70,7 @@ const pollSchema = new mongoose.Schema({
   },
   imageUrl: {  // Додаємо поле для картинки
     type: String,
-    required: false,  // Поле не є обов'язковим
+    required: false,  
     default : "https://cdn-icons-png.flaticon.com/512/9501/9501143.png",
   },
 });
